@@ -1,2 +1,8 @@
 .env
 CLAUDE.md
+ROADMAP.md
+data/
+__pycache__/
+*.pyc
+.venv/
+venv/

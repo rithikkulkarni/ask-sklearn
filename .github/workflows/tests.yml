@@ -27,4 +27,15 @@ jobs:
           pip install pytest
 
       - name: Run tests
-        run: pytest -v
+        # pytest exits with code 5 when it finds zero tests to collect, which
+        # would otherwise fail this job. Treat "no tests yet" as a pass so the
+        # pipeline stays green early in the project, while still failing on
+        # actual test failures (any other non-zero exit code).
+        run: |
+          pytest -v
+          exit_code=$?
+          if [ $exit_code -eq 5 ]; then
+            echo "No tests collected yet — treating as pass."
+            exit 0
+          fi
+          exit $exit_code

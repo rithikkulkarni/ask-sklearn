@@ -9,11 +9,13 @@ API_ROOT = "https://api.github.com"
 
 def make_session(token: str) -> requests.Session:
     session = requests.Session()
-    session.headers.update({
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    })
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+    )
     return session
 
 
@@ -59,4 +61,6 @@ def paginated_get(session: requests.Session, url: str, params: dict | None = Non
         yield from response.json()
 
         next_url = response.links.get("next", {}).get("url")
-        next_params = None  # subsequent URLs from Link header already include query params
+        next_params = (
+            None  # subsequent URLs from Link header already include query params
+        )

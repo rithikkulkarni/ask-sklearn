@@ -49,11 +49,13 @@ def fetch_all_comments_index(session):
         if not match:
             continue
         issue_number = int(match.group(1))
-        comments_by_issue.setdefault(issue_number, []).append({
-            "author": comment["user"]["login"] if comment["user"] else None,
-            "body": comment["body"],
-            "created_at": comment["created_at"],
-        })
+        comments_by_issue.setdefault(issue_number, []).append(
+            {
+                "author": comment["user"]["login"] if comment["user"] else None,
+                "body": comment["body"],
+                "created_at": comment["created_at"],
+            }
+        )
     return comments_by_issue
 
 
@@ -67,10 +69,12 @@ def fetch_linked_prs(session, issue_number):
         source_issue = event.get("source", {}).get("issue")
         if source_issue is None or "pull_request" not in source_issue:
             continue
-        linked_prs.append({
-            "number": source_issue["number"],
-            "url": source_issue["html_url"],
-        })
+        linked_prs.append(
+            {
+                "number": source_issue["number"],
+                "url": source_issue["html_url"],
+            }
+        )
     return linked_prs
 
 
@@ -92,8 +96,7 @@ def flush_shard(records, shard_index):
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     shard_path = OUT_DIR / f"issues_shard_{shard_index:04d}.jsonl"
     with open(shard_path, "w", encoding="utf-8") as f:
-        for record in records:
-            f.write(json.dumps(record) + "\n")
+        f.writelines(json.dumps(record) + "\n" for record in records)
     print(f"Wrote {len(records)} issues to {shard_path}")
 
 
@@ -129,7 +132,9 @@ def main():
     if shard:
         flush_shard(shard, shard_index)
 
-    print(f"Done. {total} issues written across {shard_index + (1 if shard else 0)} shard(s).")
+    print(
+        f"Done. {total} issues written across {shard_index + (1 if shard else 0)} shard(s)."
+    )
 
 
 if __name__ == "__main__":

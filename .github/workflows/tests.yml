@@ -31,11 +31,16 @@ jobs:
         # would otherwise fail this job. Treat "no tests yet" as a pass so the
         # pipeline stays green early in the project, while still failing on
         # actual test failures (any other non-zero exit code).
+        #
+        # GitHub Actions runs this script with `bash -e`, which exits
+        # immediately on any non-zero exit code. Using `|| exit_code=$?`
+        # captures pytest's exit code via the OR branch instead of letting
+        # -e kill the step before we can inspect it.
         run: |
-          pytest -v
-          exit_code=$?
-          if [ $exit_code -eq 5 ]; then
+          pytest -v || exit_code=$?
+          exit_code=${exit_code:-0}
+          if [ "$exit_code" -eq 5 ]; then
             echo "No tests collected yet — treating as pass."
             exit 0
           fi
-          exit $exit_code
+          exit "$exit_code"

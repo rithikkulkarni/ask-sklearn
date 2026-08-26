@@ -3,3 +3,14 @@ chunking:
   chunk_overlap_tokens: 50
   tokenizer_encoding: cl100k_base
   module_label_prefix: "module:"
+
+embedding:
+  model: text-embedding-3-small
+  batch_size: 100
+
+vector_store:
+  collection_name: sklearn_issue_chunks
+  vector_size: 1536
+  distance: Cosine
+  host: localhost
+  port: 6333

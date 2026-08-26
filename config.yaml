@@ -1,0 +1,5 @@
+chunking:
+  chunk_size_tokens: 400
+  chunk_overlap_tokens: 50
+  tokenizer_encoding: cl100k_base
+  module_label_prefix: "module:"

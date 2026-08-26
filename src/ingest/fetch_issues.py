@@ -59,26 +59,7 @@ def fetch_all_comments_index(session):
     return comments_by_issue
 
 
-def fetch_linked_prs(session, issue_number):
-    """Return PRs that cross-reference this issue, via the issue timeline endpoint."""
-    url = f"{API_ROOT}/repos/{OWNER}/{REPO}/issues/{issue_number}/timeline"
-    linked_prs = []
-    for event in paginated_get(session, url, {"per_page": 100}):
-        if event.get("event") != "cross-referenced":
-            continue
-        source_issue = event.get("source", {}).get("issue")
-        if source_issue is None or "pull_request" not in source_issue:
-            continue
-        linked_prs.append(
-            {
-                "number": source_issue["number"],
-                "url": source_issue["html_url"],
-            }
-        )
-    return linked_prs
-
-
-def build_record(issue, comments_by_issue, session):
+def build_record(issue, comments_by_issue):
     return {
         "number": issue["number"],
         "title": issue["title"],
@@ -88,7 +69,6 @@ def build_record(issue, comments_by_issue, session):
         "created_at": issue["created_at"],
         "closed_at": issue["closed_at"],
         "comments": comments_by_issue.get(issue["number"], []),
-        "linked_prs": fetch_linked_prs(session, issue["number"]),
     }
 
 
@@ -117,7 +97,7 @@ def main():
     total = 0
 
     for issue in fetch_all_issues(session):
-        record = build_record(issue, comments_by_issue, session)
+        record = build_record(issue, comments_by_issue)
         shard.append(record)
         total += 1
 

@@ -19,11 +19,32 @@ class ChunkingConfig:
 
 
 @dataclass
+class EmbeddingConfig:
+    model: str
+    batch_size: int
+
+
+@dataclass
+class VectorStoreConfig:
+    collection_name: str
+    vector_size: int
+    distance: str
+    host: str
+    port: int
+
+
+@dataclass
 class Config:
     chunking: ChunkingConfig
+    embedding: EmbeddingConfig
+    vector_store: VectorStoreConfig
 
 
 def load_config(path: str = "config.yaml") -> Config:
     with open(path, encoding="utf-8") as f:
         raw = yaml.safe_load(f)
-    return Config(chunking=ChunkingConfig(**raw["chunking"]))
+    return Config(
+        chunking=ChunkingConfig(**raw["chunking"]),
+        embedding=EmbeddingConfig(**raw["embedding"]),
+        vector_store=VectorStoreConfig(**raw["vector_store"]),
+    )

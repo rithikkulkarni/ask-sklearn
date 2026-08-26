@@ -9,14 +9,21 @@ import json
 import re
 from pathlib import Path
 
+from src.chunking.tokenizer import (
+    count_tokens,
+    get_encoding,
+    split_by_tokens,
+    take_last_tokens,
+)
 from src.config import load_config
-from src.chunking.tokenizer import count_tokens, get_encoding, split_by_tokens, take_last_tokens
 
 RAW_DIR = Path("data/raw")
 OUT_PATH = Path("data/processed/chunks.jsonl")
 
 # Matches mentions like "scikit-learn 1.3.2", "sklearn==1.2.0", "sklearn: 1.3.2".
-VERSION_RE = re.compile(r"(?:scikit-learn|sklearn)[\s:=]*v?(\d+\.\d+(?:\.\d+)?)", re.IGNORECASE)
+VERSION_RE = re.compile(
+    r"(?:scikit-learn|sklearn)[\s:=]*v?(\d+\.\d+(?:\.\d+)?)", re.IGNORECASE
+)
 
 
 def load_issues():
@@ -30,13 +37,15 @@ def extract_component(issue, module_prefix):
     """Component = first `module:X` label on the issue, if any."""
     for label in issue["labels"]:
         if label.startswith(module_prefix):
-            return label[len(module_prefix):]
+            return label[len(module_prefix) :]
     return None
 
 
 def extract_version(issue):
     """Best-effort scikit-learn version mention: checked in the body first, then comments."""
-    texts = [issue["body"] or ""] + [comment["body"] or "" for comment in issue["comments"]]
+    texts = [issue["body"] or ""] + [
+        comment["body"] or "" for comment in issue["comments"]
+    ]
     for text in texts:
         match = VERSION_RE.search(text)
         if match:
@@ -48,15 +57,17 @@ def build_units(issue):
     """Ordered list of (text, source_metadata) covering the issue body then each comment."""
     units = [(issue["body"] or "", {"type": "body"})]
     for i, comment in enumerate(issue["comments"]):
-        units.append((
-            comment["body"] or "",
-            {
-                "type": "comment",
-                "comment_index": i,
-                "author": comment["author"],
-                "created_at": comment["created_at"],
-            },
-        ))
+        units.append(
+            (
+                comment["body"] or "",
+                {
+                    "type": "comment",
+                    "comment_index": i,
+                    "author": comment["author"],
+                    "created_at": comment["created_at"],
+                },
+            )
+        )
     return units
 
 
@@ -136,7 +147,10 @@ def main():
             version = extract_version(issue)
 
             chunks = chunk_issue(
-                issue, encoding, chunking_cfg.chunk_size_tokens, chunking_cfg.chunk_overlap_tokens
+                issue,
+                encoding,
+                chunking_cfg.chunk_size_tokens,
+                chunking_cfg.chunk_overlap_tokens,
             )
 
             for i, (text, sources) in enumerate(chunks):
@@ -155,7 +169,9 @@ def main():
 
             total_issues += 1
             if total_issues % 500 == 0:
-                print(f"Chunked {total_issues} issues -> {total_chunks} chunks so far...")
+                print(
+                    f"Chunked {total_issues} issues -> {total_chunks} chunks so far..."
+                )
 
     print(f"Done. {total_issues} issues -> {total_chunks} chunks written to {OUT_PATH}")
 

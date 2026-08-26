@@ -36,7 +36,7 @@ def split_by_tokens(text: str, encoding, window: int, overlap: int):
     step = max(window - overlap, 1)
     pieces = []
     for start in range(0, len(tokens), step):
-        piece_tokens = tokens[start:start + window]
+        piece_tokens = tokens[start : start + window]
         pieces.append(encoding.decode(piece_tokens))
         if start + window >= len(tokens):
             break

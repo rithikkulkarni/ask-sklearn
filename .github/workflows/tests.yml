@@ -1,0 +1,46 @@
+name: Tests
+
+# Runs on every push to main/dev and on every pull request targeting them.
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    name: Unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest
+
+      - name: Run tests
+        # pytest exits with code 5 when it finds zero tests to collect, which
+        # would otherwise fail this job. Treat "no tests yet" as a pass so the
+        # pipeline stays green early in the project, while still failing on
+        # actual test failures (any other non-zero exit code).
+        #
+        # GitHub Actions runs this script with `bash -e`, which exits
+        # immediately on any non-zero exit code. Using `|| exit_code=$?`
+        # captures pytest's exit code via the OR branch instead of letting
+        # -e kill the step before we can inspect it.
+        run: |
+          pytest -v || exit_code=$?
+          exit_code=${exit_code:-0}
+          if [ "$exit_code" -eq 5 ]; then
+            echo "No tests collected yet — treating as pass."
+            exit 0
+          fi
+          exit "$exit_code"

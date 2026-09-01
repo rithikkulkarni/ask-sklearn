@@ -23,3 +23,10 @@ retrieval:
   filter_fields:
     - component
     - version
+
+generation:
+  model: gpt-4o-mini
+  temperature: 0.1
+  min_top_score: 0.75       # pre-LLM refusal cutoff on the top hit's score — separate from
+                             # retrieval.score_threshold, which is tuned for relevance, not
+                             # "good enough to generate an answer from"

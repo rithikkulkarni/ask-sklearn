@@ -32,6 +32,11 @@ def test_load_config_parses_all_sections(tmp_path):
                     "max_k": 10,
                     "filter_fields": ["component", "version"],
                 },
+                "generation": {
+                    "model": "gpt-4o-mini",
+                    "temperature": 0.1,
+                    "min_top_score": 0.75,
+                },
             }
         ),
         encoding="utf-8",
@@ -53,3 +58,6 @@ def test_load_config_parses_all_sections(tmp_path):
     assert config.retrieval.min_k == 1
     assert config.retrieval.max_k == 10
     assert config.retrieval.filter_fields == ["component", "version"]
+    assert config.generation.model == "gpt-4o-mini"
+    assert config.generation.temperature == 0.1
+    assert config.generation.min_top_score == 0.75

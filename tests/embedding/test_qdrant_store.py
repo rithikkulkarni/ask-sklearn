@@ -63,6 +63,8 @@ def test_upsert_chunks_builds_points_with_derived_ids_and_payload():
             "issue_number": 1,
             "component": "ensemble",
             "version": "1.3.2",
+            "state": "open",
+            "text": "GridSearchCV raises on n_jobs=-1",
         }
     ]
     vectors = [[0.1, 0.2]]
@@ -81,4 +83,6 @@ def test_upsert_chunks_builds_points_with_derived_ids_and_payload():
         "issue_number": 1,
         "component": "ensemble",
         "version": "1.3.2",
+        "state": "open",
+        "text": "GridSearchCV raises on n_jobs=-1",
     }

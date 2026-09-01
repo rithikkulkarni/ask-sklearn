@@ -25,6 +25,7 @@ def test_main_skips_already_indexed_and_batches_new_chunks(tmp_path, monkeypatch
             "issue_number": 1,
             "component": "a",
             "version": None,
+            "state": "open",
             "text": "t0",
         },
         {
@@ -32,6 +33,7 @@ def test_main_skips_already_indexed_and_batches_new_chunks(tmp_path, monkeypatch
             "issue_number": 1,
             "component": "a",
             "version": None,
+            "state": "open",
             "text": "t1",
         },
         {
@@ -39,6 +41,7 @@ def test_main_skips_already_indexed_and_batches_new_chunks(tmp_path, monkeypatch
             "issue_number": 1,
             "component": "a",
             "version": None,
+            "state": "open",
             "text": "t2",
         },
     ]

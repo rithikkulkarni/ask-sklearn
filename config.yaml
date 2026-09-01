@@ -14,3 +14,12 @@ vector_store:
   distance: Cosine
   host: localhost
   port: 6333
+
+retrieval:
+  overfetch_k: 30           # candidates pulled from Qdrant before filtering/thresholding
+  score_threshold: 0.75     # minimum cosine similarity to keep a hit (tune via eval harness)
+  min_k: 1                  # floor — avoid returning zero results if nothing clears the threshold
+  max_k: 10                 # ceiling — cap how many chunks ever get passed to generation, even if many clear the threshold
+  filter_fields:
+    - component
+    - version

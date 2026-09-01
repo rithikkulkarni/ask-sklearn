@@ -54,7 +54,7 @@ def upsert_chunks(
     records: list[dict],
     vectors: list[list[float]],
 ) -> None:
-    """records: chunk dicts (with chunk_id, issue_number, component, version).
+    """records: chunk dicts (with chunk_id, issue_number, component, version, state, text).
     vectors: embeddings, same order/length as records.
     """
     points = [
@@ -66,6 +66,8 @@ def upsert_chunks(
                 "issue_number": record["issue_number"],
                 "component": record["component"],
                 "version": record["version"],
+                "state": record["state"],
+                "text": record["text"],
             },
         )
         for record, vector in zip(records, vectors)

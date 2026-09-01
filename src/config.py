@@ -34,10 +34,20 @@ class VectorStoreConfig:
 
 
 @dataclass
+class RetrievalConfig:
+    overfetch_k: int
+    score_threshold: float
+    min_k: int
+    max_k: int
+    filter_fields: list[str]
+
+
+@dataclass
 class Config:
     chunking: ChunkingConfig
     embedding: EmbeddingConfig
     vector_store: VectorStoreConfig
+    retrieval: RetrievalConfig
 
 
 def load_config(path: str = "config.yaml") -> Config:
@@ -47,4 +57,5 @@ def load_config(path: str = "config.yaml") -> Config:
         chunking=ChunkingConfig(**raw["chunking"]),
         embedding=EmbeddingConfig(**raw["embedding"]),
         vector_store=VectorStoreConfig(**raw["vector_store"]),
+        retrieval=RetrievalConfig(**raw["retrieval"]),
     )

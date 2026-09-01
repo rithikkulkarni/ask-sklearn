@@ -162,6 +162,7 @@ def main():
                     "token_count": count_tokens(text, encoding),
                     "component": component,
                     "version": version,
+                    "state": issue["state"],
                     "sources": sources,
                 }
                 out.write(json.dumps(record) + "\n")

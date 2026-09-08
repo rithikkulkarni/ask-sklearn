@@ -15,7 +15,16 @@ def chunk_point_id(chunk_id: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, chunk_id))
 
 
-def get_client(host: str, port: int) -> QdrantClient:
+def get_client(
+    host: str, port: int, url: str | None = None, api_key: str | None = None
+) -> QdrantClient:
+    """`url`/`api_key` are for Qdrant Cloud (a full HTTPS cluster URL + API key);
+    when `url` isn't given, falls back to the local host/port connection used in
+    dev. Callers pass `url`/`api_key` from optional env vars so local dev is
+    unaffected when they're unset.
+    """
+    if url:
+        return QdrantClient(url=url, api_key=api_key)
     return QdrantClient(host=host, port=port)
 
 

@@ -37,6 +37,10 @@ def test_load_config_parses_all_sections(tmp_path):
                     "temperature": 0.1,
                     "min_top_score": 0.75,
                 },
+                "eval": {
+                    "judge_model": "gemini-3.5-flash-lite",
+                    "judge_temperature": 0.0,
+                },
             }
         ),
         encoding="utf-8",
@@ -61,3 +65,5 @@ def test_load_config_parses_all_sections(tmp_path):
     assert config.generation.model == "gpt-4o-mini"
     assert config.generation.temperature == 0.1
     assert config.generation.min_top_score == 0.75
+    assert config.eval.judge_model == "gemini-3.5-flash-lite"
+    assert config.eval.judge_temperature == 0.0

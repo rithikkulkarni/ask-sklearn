@@ -1,0 +1,415 @@
+[
+  {
+    "id": "q01",
+    "query": "Why does SGDRegressor raise 'ValueError: Buffer has wrong number of dimensions (expected 1, got 2)' when fitting, and how was it resolved?",
+    "target_issue_numbers": [604],
+    "rubric_facts": [
+      "SGDRegressor requires y to have shape (n_samples,), not (n_samples, 1); unlike Ridge, it doesn't support multi-target regression.",
+      "The quick workaround is to reshape or .ravel() y down to 1D before calling fit.",
+      "The underlying issue was fixed by PR #2251, which made the input shape handling more liberal."
+    ],
+    "tags": ["component:linear_model", "code-heavy"],
+    "smoke": false
+  },
+  {
+    "id": "q02",
+    "query": "How would you add precomputed kernel support to RidgeCV in scikit-learn?",
+    "target_issue_numbers": [624],
+    "rubric_facts": [
+      "Move the dual-objective code out of ridge_regression into a new kernel_ridge_regression function that accepts a kernel and kernel parameters.",
+      "Add kernel, gamma, degree, and coef0 constructor parameters to Ridge/RidgeCV, computing the kernel via pairwise_kernels.",
+      "For RidgeCV, replacing calls to safe_sparse_dot with pairwise_kernels gets precomputed-kernel support for free."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q03",
+    "query": "What iterative solver approaches were discussed for adding warm_start support to Ridge regression?",
+    "target_issue_numbers": [769],
+    "rubric_facts": [
+      "Conjugate gradient (scipy.sparse.linalg.cg / scipy.optimize.fmin_cg) was proposed as an iterative solver.",
+      "The coordinate descent solver already used for elastic net could be reused for Ridge by setting its mixing parameter to 0.",
+      "Coordinate descent was seen as more useful when n_features << n_samples, while conjugate gradient works in either the primal or dual depending on the n_features/n_samples ratio."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q04",
+    "query": "What approach was proposed to measure the stability of a clustering model's hyperparameters, like the number of clusters?",
+    "target_issue_numbers": [1091],
+    "rubric_facts": [
+      "Split the data into three roughly-even parts (A, B, C), fit the same hyperparameters on A+B and separately on A+C, then compare predictions on A.",
+      "Stability should be scored with a chance-adjusted metric such as Adjusted Rand Index (ARI) or Adjusted Mutual Information (AMI) to avoid bias toward higher cluster counts.",
+      "Many permutations need to be averaged because individual stability estimates have high variance."
+    ],
+    "tags": ["component:model_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q05",
+    "query": "What's blocking scikit-learn from implementing the parallelized SGD approach described in the NIPS 2010 paper?",
+    "target_issue_numbers": [1174],
+    "rubric_facts": [
+      "It depends on joblib adding proper shared-memory support, for both the coefficient vector and the data, tracked in joblib issue #44.",
+      "Other more recent papers on parallel SGD were suggested as potentially better but more complex to implement."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q06",
+    "query": "How can extra data, like sample weights, beyond y_true and y_pred be passed into a scoring function used by GridSearchCV?",
+    "target_issue_numbers": [1179],
+    "rubric_facts": [
+      "Maintainers were open to an optional parameter on the score/loss function, but wanted the change backed by a documentation example rather than added as new API on its own.",
+      "The discussion concluded that this kind of scoring logic might better live in the estimator itself rather than in GridSearchCV."
+    ],
+    "tags": ["component:model_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q07",
+    "query": "Why is it hard to add a user-defined distance function to KMeans, and what alternative did maintainers propose?",
+    "target_issue_numbers": [1188],
+    "rubric_facts": [
+      "Changing the distance metric breaks the assumption that a cluster centroid is a simple arithmetic mean; under a different metric the true centroid may require a nontrivial Fréchet/Karcher mean.",
+      "A dedicated 'KernelKMeans' estimator was proposed as the more principled alternative, sometimes approximated by running KMeans after a kernel-PCA-style embedding.",
+      "The Nystroem kernel approximation was suggested as a practical way to trade accuracy for runtime with arbitrary kernels."
+    ],
+    "tags": ["component:cluster"],
+    "smoke": true
+  },
+  {
+    "id": "q08",
+    "query": "What adaptive learning-rate method for SGD did maintainers recommend instead of the one proposed in a recent arXiv paper?",
+    "target_issue_numbers": [1261],
+    "rubric_facts": [
+      "Maintainers preferred waiting a year or two after a paper's publication before adopting it, since the proposed method was very new.",
+      "AdaGrad was recommended as a well-established adaptive learning-rate method that already works well.",
+      "There was concern about not slowing down the core SGD Cython loop."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q09",
+    "query": "Why is PassiveAggressiveClassifier significantly slower than Perceptron, and how was it addressed?",
+    "target_issue_numbers": [1327],
+    "rubric_facts": [
+      "PassiveAggressiveClassifier recomputed each sample's squared norm on every iteration, unlike Perceptron, making it about 5x slower on the document classification example.",
+      "The proposed fix was to add norm precomputation (precompute_norms / get_norm) to SequentialDataset.",
+      "A contributor implemented precomputation in a branch and measured speedups that increased with the number of features."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q10",
+    "query": "What two kinds of tools were proposed for handling class imbalance via resampling in scikit-learn?",
+    "target_issue_numbers": [1362],
+    "rubric_facts": [
+      "A simple one-shot utility function to oversample or undersample a dataset once.",
+      "A cross-validation object/wrapper that performs the resampling differently for each fold.",
+      "An online/incremental rebalancing estimator with partial_fit support was also discussed, but as a separate, more general use case."
+    ],
+    "tags": ["component:model_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q11",
+    "query": "What were the main obstacles discussed around adding a Relevance Vector Machine (RVM) implementation to scikit-learn?",
+    "target_issue_numbers": [1513],
+    "rubric_facts": [
+      "RVMs are patented in the US by Microsoft, which raised licensing concerns even though a GPLv2 reference MATLAB implementation exists.",
+      "The recommended optimization approach was the sequential sparse learning algorithm from Tipping & Faul (2003), not SMO, which is used for SVMs.",
+      "There was uncertainty about the exact relationship between RVM and scikit-learn's existing (slow) ARD implementation, since their objective functions appear equivalent but use different optimization strategies."
+    ],
+    "tags": ["component:svm"],
+    "smoke": false
+  },
+  {
+    "id": "q12",
+    "query": "What issue was raised with the Lasso vs ElasticNet sparse recovery example in the scikit-learn documentation?",
+    "target_issue_numbers": [1514],
+    "rubric_facts": [
+      "The example plot_lasso_and_elasticnet.html lacked a docstring explaining its purpose.",
+      "The reporter observed Lasso appeared to perform better than ElasticNet in the example and was unsure what it was meant to illustrate.",
+      "A suggestion was made to also add an example comparing Lasso and ARD regression on sparse data."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q13",
+    "query": "Why does preprocessing.binarize on a sparse CSR matrix leave explicitly stored zero entries, and how should it be fixed?",
+    "target_issue_numbers": [1535],
+    "rubric_facts": [
+      "Values that were nonzero in the input but fall below the binarization threshold get set to zero in X2.data, but the entry isn't removed from the sparse matrix's structure, leaving an explicit zero.",
+      "The agreed fix was to call eliminate_zeros() in place on the result so X2.data only ever stores true nonzero entries.",
+      "The fix was implemented in PR #1536."
+    ],
+    "tags": ["component:preprocessing"],
+    "smoke": false
+  },
+  {
+    "id": "q14",
+    "query": "What refactor was planned for BallTree's implementation, and why was the cleanup work paused?",
+    "target_issue_numbers": [1614],
+    "rubric_facts": [
+      "The plan was to remove code left over after the 'equal distance' warning was removed, and rework BallTree to use typed memoryviews instead of raw pointers now that Cython 0.17 was available.",
+      "Cleanup was paused because a full new ball tree implementation using the typed-memoryview interface was already being developed separately, making incremental cleanup of the old code not worth doing."
+    ],
+    "tags": ["component:tree"],
+    "smoke": false
+  },
+  {
+    "id": "q15",
+    "query": "What API challenge came up when trying to design a warm-start-aware GridSearchCV?",
+    "target_issue_numbers": [1674],
+    "rubric_facts": [
+      "GridSearchCV's use of clone() and parallelism across n_jobs means setting warm_start=True on an estimator like Lasso has no effect inside a normal grid search.",
+      "One proposed alternative moved the responsibility of computing a solution 'path' into the estimator itself, rather than fixing GridSearchCV directly.",
+      "A key open question was how to order multiple warm-start-compatible parameters, since the correct sequence to reuse computation isn't always obvious."
+    ],
+    "tags": ["component:model_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q16",
+    "query": "What problem exists with how meta-estimators like Pipeline and GridSearchCV expose methods such as score or decision_function from their underlying estimator?",
+    "target_issue_numbers": [1805],
+    "rubric_facts": [
+      "Because these meta-estimators define such methods directly rather than via a property or __getattr__, hasattr() checks can incorrectly report a method exists even when the wrapped estimator doesn't actually support it.",
+      "The proposed fix was to implement such methods as properties that return the underlying estimator's method or raise AttributeError if it's missing, so ducktyping via hasattr behaves correctly.",
+      "An example failure case given was calling GridSearch(Pipeline(...)).fit(...).score(...) when the pipeline's final estimator lacks a score method."
+    ],
+    "tags": ["ambiguous", "no-module-label"],
+    "smoke": false
+  },
+  {
+    "id": "q17",
+    "query": "What usability complaint was raised about scikit-learn's univariate feature selection API, such as f_classif, f_regression, and chi2?",
+    "target_issue_numbers": [2381],
+    "rubric_facts": [
+      "Users have to import and pass callables like f_classif/f_regression/chi2 directly, which was seen as unfriendly; passing a string was suggested instead.",
+      "A counter-argument was that passing callables lets joblib cache the scoring function, which matters for GridSearchCV performance since the score would otherwise be recomputed for every grid point.",
+      "The existing GenericUnivariateSelect class was noted as undocumented in the user guide."
+    ],
+    "tags": ["component:feature_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q18",
+    "query": "Why are decision_function and predict_proba outputs inconsistent between multi-label classifiers and multi-output multi-class classifiers?",
+    "target_issue_numbers": [2451],
+    "rubric_facts": [
+      "A multi-label classifier like OneVsRestClassifier returns a single 2D array (rows = samples, columns = labels).",
+      "A multi-output multi-class classifier like RandomForestClassifier returns a list of 2D arrays, one per output.",
+      "A multi-output problem where every output happens to be binary looks like a multi-label problem but isn't returned in the multi-label format, which complicates writing generic metrics like roc_auc_score."
+    ],
+    "tags": ["component:multiclass"],
+    "smoke": false
+  },
+  {
+    "id": "q19",
+    "query": "Why does the biclustering/coclustering API in scikit-learn not scale well to large datasets, and what change was proposed?",
+    "target_issue_numbers": [2484],
+    "rubric_facts": [
+      "Biclustering estimators store rows_ and columns_ as dense boolean arrays sized n_clusters * n_samples and n_clusters * n_features, which doesn't scale for large sparse data with many clusters.",
+      "The proposed fix was to store cluster assignments as index arrays (or a sparse structure) instead of dense boolean masks, since assignment is single-cluster-per-point in practice."
+    ],
+    "tags": ["component:cluster"],
+    "smoke": false
+  },
+  {
+    "id": "q20",
+    "query": "What's the disagreement about how center_data computes X_std when normalize=True and fit_intercept=True in scikit-learn's linear models?",
+    "target_issue_numbers": [2601],
+    "rubric_facts": [
+      "The reporter expected X_std to be a per-feature standard deviation computed with np.mean, but the code used np.sum of squares, causing X_std to grow with the number of samples rather than staying at a fixed scale.",
+      "Maintainers explained this mainly rescales the effective regularization parameter (alpha) by a factor related to sqrt(n_samples), rather than being a statistical bug.",
+      "Maintainers acknowledged the behavior was surprising and hard to debug, and said changing it would need to preserve backward compatibility of how regularization strength is interpreted."
+    ],
+    "tags": ["component:linear_model"],
+    "smoke": false
+  },
+  {
+    "id": "q21",
+    "query": "What multi-label learning algorithm was proposed as a feature request, and how does it differ from scikit-learn's existing multi-label KNN support?",
+    "target_issue_numbers": [2606],
+    "rubric_facts": [
+      "The request was for ML-kNN (Multi-Label k-Nearest Neighbor), which finds each test instance's k nearest neighbors and uses a maximum a posteriori (Bayesian) rule over their label sets to predict the label set.",
+      "Sparse matrix support was called out as important since many multi-label tasks are text classification with sparse features.",
+      "Maintainers noted scikit-learn's existing multi-label KNN support only used a binary-relevance/one-vs-rest wrapper, not the true Bayesian ML-kNN approach."
+    ],
+    "tags": ["component:cluster"],
+    "smoke": false
+  },
+  {
+    "id": "q22",
+    "query": "What memory savings did using a MARISA trie for CountVectorizer's vocabulary storage achieve, and what was the tradeoff?",
+    "target_issue_numbers": [2639],
+    "rubric_facts": [
+      "On the 20 newsgroups dataset, a MARISA-trie-based vectorizer used roughly 50x-80x less memory than the standard dict-based CountVectorizer.",
+      "The tradeoff was slower fit (about 2-3x slower) and roughly 2x slower transform.",
+      "Maintainers were hesitant to add a hard dependency on the MARISA-trie library, suggesting instead a way to support alternative Mapping implementations for vocabulary_."
+    ],
+    "tags": ["component:feature_extraction"],
+    "smoke": false
+  },
+  {
+    "id": "q23",
+    "query": "What attributes were proposed to standardize across all *CV estimators, like RidgeCV, LassoCV, and GridSearchCV?",
+    "target_issue_numbers": [2709],
+    "rubric_facts": [
+      "best_score_, which was missing from RidgeCV and LassoCV despite already being present on GridSearchCV.",
+      "best_estimator_, which would return a fitted non-CV version of the class, e.g. RidgeCV -> Ridge.",
+      "best_params_, especially useful for estimators like ElasticNetCV that tune multiple parameters (alpha_ and l1_ratio_)."
+    ],
+    "tags": ["component:model_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q24",
+    "query": "Why did FastICA's symmetric decorrelation step raise 'array must not contain infs or NaNs', and what fix was suggested?",
+    "target_issue_numbers": [2735],
+    "rubric_facts": [
+      "The eigenvalue decomposition (linalg.eigh) used in _sym_decorrelation could return values very close to zero, or even spuriously negative values on certain BLAS backends like OpenBLAS, producing NaNs when computing 1/sqrt(s).",
+      "The suggested fix was to use SVD-based orthogonalization instead of eigendecomposition, since it's more numerically stable, at some added computational cost.",
+      "The negative eigenvalues were ultimately traced to numerical issues that occur when the covariance matrix's determinant is at or near zero."
+    ],
+    "tags": ["component:decomposition", "code-heavy"],
+    "smoke": true
+  },
+  {
+    "id": "q25",
+    "query": "Why does calling decision_function on the test set inside a GradientBoosting monitor callback raise AttributeError: 'NoneType' object has no attribute 'tree_'?",
+    "target_issue_numbers": [2855],
+    "rubric_facts": [
+      "estimators_ is pre-allocated for n_estimators trees, but during fit the monitor callback runs before later boosting stages are fitted, so estimators_[i:] still contains None placeholders.",
+      "decision_function loops over all of estimators_, so it hits the not-yet-fitted None entries and fails.",
+      "The suggested workaround was to incrementally update the held-out predictions inside the monitor using predict_stage per boosting iteration, instead of recomputing decision_function on the full, partially-fitted ensemble."
+    ],
+    "tags": ["component:ensemble", "code-heavy"],
+    "smoke": false
+  },
+  {
+    "id": "q26",
+    "query": "What metric was proposed to measure the stability of a feature selection method across resampled training sets?",
+    "target_issue_numbers": [3031],
+    "rubric_facts": [
+      "The idea was to run feature selection on multiple subsamples of the training data and measure how similar the selected feature subsets are across runs.",
+      "Two candidate similarity measures were proposed: Jaccard similarity and Kuncheva's stability index.",
+      "A maintainer distinguished this from the already-supported L1-regularization-based stability selection (randomized sparse models), calling this proposal a different, more general wrapper approach."
+    ],
+    "tags": ["component:feature_selection"],
+    "smoke": false
+  },
+  {
+    "id": "q27",
+    "query": "What preprocessing feature was requested for clipping or winsorizing data, and was it accepted?",
+    "target_issue_numbers": [3130],
+    "rubric_facts": [
+      "The request was for a way to winsorize, trim, or clip feature values to a hard limit, useful especially during prototyping.",
+      "It was proposed both as a standalone function and as a class following the Transformer API (fit/transform).",
+      "Maintainers were receptive as long as the implementation was efficient."
+    ],
+    "tags": ["component:preprocessing"],
+    "smoke": false
+  },
+  {
+    "id": "q28",
+    "query": "What happens when you call inverse_transform on a LabelEncoder that was fit on a mix of strings and numbers?",
+    "target_issue_numbers": [9285],
+    "rubric_facts": [
+      "Fitting LabelEncoder on mixed types like [1, 2, 'a', 'b'] and calling inverse_transform returns an array where every value has been coerced to a string, rather than preserving the original types.",
+      "The reporter expected the output to instead be an object-dtype array like array([1, 2, 'a', 'b'], dtype=object), preserving the original numeric/string distinction."
+    ],
+    "tags": ["component:preprocessing", "version:0.18.1"],
+    "smoke": true
+  },
+  {
+    "id": "q29",
+    "query": "Why does TruncatedSVD run out of memory on a very high-dimensional sparse matrix, even with the 'arpack' or 'randomized' solvers?",
+    "target_issue_numbers": [10885],
+    "rubric_facts": [
+      "Both the randomized solver's sparse matrix multiplication and the arpack solver's use of scipy's svds construct dense intermediate arrays whose size scales with n_features, not just n_components.",
+      "On a 330 x 2M sparse matrix this caused a MemoryError during the sparse-times-dense multiplication needed for the SVD computation.",
+      "The reporter noted the failure was platform-dependent: Ubuntu required converting to float32 to run at all, while macOS could run it without that conversion."
+    ],
+    "tags": ["component:decomposition", "version:0.19.1"],
+    "smoke": false
+  },
+  {
+    "id": "q30",
+    "query": "Why does fitting Birch on data with very large float values sometimes raise an AttributeError instead of a ValueError?",
+    "target_issue_numbers": [17966],
+    "rubric_facts": [
+      "Extremely large input values cause numeric overflow in Birch's internal distance/norm computations, producing NaN/inf intermediate values.",
+      "When the number of samples is small enough to fit within branching_factor, the invalid values surface as a ValueError from AgglomerativeClustering; with more samples, the overflow instead causes a subcluster to never get its sq_norm_ attribute set, leading to an AttributeError.",
+      "The reporter expected both cases to raise a consistent ValueError about invalid or infinite input, since the root cause (overflow) is the same in both cases."
+    ],
+    "tags": ["component:cluster", "code-heavy", "version:0.23.1"],
+    "smoke": false
+  },
+  {
+    "id": "q31",
+    "query": "Why does IterativeImputer raise a shape-mismatch ValueError when the estimator is set to PLSRegression?",
+    "target_issue_numbers": [19352],
+    "rubric_facts": [
+      "PLSRegression.predict() returns a 2D array of shape (n_samples, 1) instead of a flat 1D array, unlike most single-output regressors.",
+      "IterativeImputer's _impute_one_feature tries to assign these imputed values directly into a 1D boolean-indexed slice of X_filled, causing a shape-mismatch error.",
+      "The reported workaround was to reshape/flatten the imputed_values array to 1D before assigning it back into X_filled."
+    ],
+    "tags": ["component:cross_decomposition", "code-heavy", "version:0.24.1"],
+    "smoke": false
+  },
+  {
+    "id": "q32",
+    "query": "Why does DictionaryLearning with fit_algorithm='cd' and multiple n_jobs raise 'ValueError: buffer source array is read-only'?",
+    "target_issue_numbers": [25165],
+    "rubric_facts": [
+      "The error originates in the Cython coordinate-descent routine (enet_coordinate_descent_gram) when it tries to get a writable memoryview on an array.",
+      "It occurs specifically when using the 'cd' fit_algorithm together with parallel execution (multiple n_jobs) on a large dataset.",
+      "The underlying issue is that data shared across joblib worker processes is treated as read-only, but the Cython code requires a writable buffer."
+    ],
+    "tags": ["component:decomposition", "code-heavy", "version:1.2.0"],
+    "smoke": true
+  },
+  {
+    "id": "q33",
+    "query": "What's the tension between an estimator's warm_start option and how GridSearchCV uses that estimator?",
+    "target_issue_numbers": [769, 1674],
+    "rubric_facts": [
+      "GridSearchCV clones the estimator and can run folds in parallel via n_jobs, which defeats the purpose of warm_start since each parameter setting starts from a fresh clone.",
+      "For Ridge, iterative solvers like conjugate gradient or coordinate descent were proposed specifically to let it support warm_start.",
+      "One proposed alternative moves the responsibility of computing a whole solution 'path' into the estimator itself, rather than fixing GridSearchCV directly."
+    ],
+    "tags": ["ambiguous", "cross-issue", "component:linear_model", "component:model_selection"],
+    "smoke": true
+  },
+  {
+    "id": "q34",
+    "query": "How do I deploy a scikit-learn model to a Kubernetes cluster using KServe for real-time inference?",
+    "target_issue_numbers": [],
+    "rubric_facts": [
+      "The answer should state it doesn't have enough information from the retrieved scikit-learn issues to answer confidently, rather than fabricating a deployment guide.",
+      "The answer should not cite any issue numbers, since no retrieved chunk is actually about Kubernetes or KServe deployment."
+    ],
+    "tags": ["refusal", "out-of-domain"],
+    "smoke": true
+  },
+  {
+    "id": "q35",
+    "query": "What's the best way to fine-tune a GPT-style transformer model using scikit-learn?",
+    "target_issue_numbers": [],
+    "rubric_facts": [
+      "The answer should decline to give a confident answer, since scikit-learn's issue tracker doesn't cover transformer fine-tuning.",
+      "The answer should not fabricate scikit-learn APIs or features for training transformers that don't actually exist in the retrieved context."
+    ],
+    "tags": ["refusal", "out-of-domain"],
+    "smoke": false
+  }
+]

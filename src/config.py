@@ -56,6 +56,11 @@ class EvalConfig:
 
 
 @dataclass
+class ApiConfig:
+    rate_limit: str
+
+
+@dataclass
 class Config:
     chunking: ChunkingConfig
     embedding: EmbeddingConfig
@@ -63,6 +68,7 @@ class Config:
     retrieval: RetrievalConfig
     generation: GenerationConfig
     eval: EvalConfig
+    api: ApiConfig
 
 
 def load_config(path: str = "config.yaml") -> Config:
@@ -75,4 +81,5 @@ def load_config(path: str = "config.yaml") -> Config:
         retrieval=RetrievalConfig(**raw["retrieval"]),
         generation=GenerationConfig(**raw["generation"]),
         eval=EvalConfig(**raw["eval"]),
+        api=ApiConfig(**raw["api"]),
     )

@@ -35,3 +35,6 @@ eval:
   judge_model: gemini-3.5-flash-lite   # deliberately not gpt-4o-mini, to avoid the
                                         # generator judging its own answers (self-preference bias)
   judge_temperature: 0.0
+
+api:
+  rate_limit: "20/minute"   # per-IP, enforced before any paid OpenAI/Gemini call

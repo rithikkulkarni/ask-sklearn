@@ -5,3 +5,7 @@ tiktoken
 openai
 qdrant-client
 google-genai
+fastapi
+uvicorn
+slowapi
+httpx

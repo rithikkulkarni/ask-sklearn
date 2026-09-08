@@ -45,7 +45,12 @@ def main():
     store_cfg = config.vector_store
 
     openai_client = OpenAI(api_key=api_key)
-    qdrant_client = get_client(store_cfg.host, store_cfg.port)
+    qdrant_client = get_client(
+        store_cfg.host,
+        store_cfg.port,
+        url=os.environ.get("QDRANT_URL"),
+        api_key=os.environ.get("QDRANT_API_KEY"),
+    )
     ensure_collection(
         qdrant_client,
         store_cfg.collection_name,

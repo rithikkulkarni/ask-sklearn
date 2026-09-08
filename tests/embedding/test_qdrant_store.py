@@ -6,8 +6,35 @@ from src.embedding.qdrant_store import (
     chunk_point_id,
     ensure_collection,
     existing_ids,
+    get_client,
     upsert_chunks,
 )
+
+
+def test_get_client_uses_host_and_port_when_no_url_given(monkeypatch):
+    mock_qdrant_client_cls = Mock()
+    monkeypatch.setattr(
+        "src.embedding.qdrant_store.QdrantClient", mock_qdrant_client_cls
+    )
+
+    get_client("localhost", 6333)
+
+    mock_qdrant_client_cls.assert_called_once_with(host="localhost", port=6333)
+
+
+def test_get_client_uses_url_and_api_key_when_url_given(monkeypatch):
+    mock_qdrant_client_cls = Mock()
+    monkeypatch.setattr(
+        "src.embedding.qdrant_store.QdrantClient", mock_qdrant_client_cls
+    )
+
+    get_client(
+        "localhost", 6333, url="https://cluster.cloud.qdrant.io:6333", api_key="key"
+    )
+
+    mock_qdrant_client_cls.assert_called_once_with(
+        url="https://cluster.cloud.qdrant.io:6333", api_key="key"
+    )
 
 
 def test_chunk_point_id_is_deterministic():

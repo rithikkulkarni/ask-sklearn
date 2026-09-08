@@ -50,12 +50,25 @@ class GenerationConfig:
 
 
 @dataclass
+class EvalConfig:
+    judge_model: str
+    judge_temperature: float
+
+
+@dataclass
+class ApiConfig:
+    rate_limit: str
+
+
+@dataclass
 class Config:
     chunking: ChunkingConfig
     embedding: EmbeddingConfig
     vector_store: VectorStoreConfig
     retrieval: RetrievalConfig
     generation: GenerationConfig
+    eval: EvalConfig
+    api: ApiConfig
 
 
 def load_config(path: str = "config.yaml") -> Config:
@@ -67,4 +80,6 @@ def load_config(path: str = "config.yaml") -> Config:
         vector_store=VectorStoreConfig(**raw["vector_store"]),
         retrieval=RetrievalConfig(**raw["retrieval"]),
         generation=GenerationConfig(**raw["generation"]),
+        eval=EvalConfig(**raw["eval"]),
+        api=ApiConfig(**raw["api"]),
     )

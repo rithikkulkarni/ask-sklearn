@@ -30,3 +30,8 @@ generation:
   min_top_score: 0.75       # pre-LLM refusal cutoff on the top hit's score — separate from
                              # retrieval.score_threshold, which is tuned for relevance, not
                              # "good enough to generate an answer from"
+
+eval:
+  judge_model: gemini-3.5-flash-lite   # deliberately not gpt-4o-mini, to avoid the
+                                        # generator judging its own answers (self-preference bias)
+  judge_temperature: 0.0

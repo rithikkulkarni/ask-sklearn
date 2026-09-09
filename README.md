@@ -6,6 +6,9 @@ Ask-sklearn is a retrieval-augmented Q&A system over scikit-learn's real GitHub 
 
 **[Try the live demo](https://frontend-vert-xi-32.vercel.app)**
 
+Interested in what else I've built? Check out my [GitHub](https://github.com/rithikkulkarni)!
+
+
 ## What is ask sklearn?
 
 `scikit-learn`'s issue tracker holds over a decade of engineering discussion in the form of bug reports with stack traces, API design arguments between maintainers, performance tradeoffs, feature requests that got rejected, and oftentimes the why behind it all. That history is mostly unsearchable beyond GitHub's own keyword search.

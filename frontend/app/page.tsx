@@ -57,7 +57,7 @@ export default function Home() {
       <header className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            Ask scikit-learn
+            ask scikit-learn
           </h1>
           <ThemeToggle />
         </div>
@@ -69,9 +69,9 @@ export default function Home() {
             rel="noopener noreferrer"
             className="text-prompt-blue underline underline-offset-2 hover:no-underline"
           >
-            scikit-learn&rsquo;s GitHub issue tracker
+            scikit-learn&rsquo;s GitHub issue tracker.
           </a>{" "}
-          &mdash; the 12,000+ bug reports, feature requests, and API debates
+          12,000+ bug reports, feature requests, and API debates
           where its maintainers do their actual work. Ask a real question and
           get a cited answer pulled from that history, or a rejection if
           the tracker doesn&apos;t have one.

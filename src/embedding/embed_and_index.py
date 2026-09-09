@@ -45,12 +45,11 @@ def main():
     store_cfg = config.vector_store
 
     openai_client = OpenAI(api_key=api_key)
-    qdrant_client = get_client(
-        store_cfg.host,
-        store_cfg.port,
-        url=os.environ.get("QDRANT_URL"),
-        api_key=os.environ.get("QDRANT_API_KEY"),
-    )
+    # Always the local instance -- QDRANT_URL/QDRANT_API_KEY (Qdrant Cloud) are
+    # only used by migrate_to_cloud.py and the deployed API, not local dev
+    # scripts, so having Qdrant Cloud credentials in .env doesn't silently
+    # redirect this away from the local Docker instance.
+    qdrant_client = get_client(store_cfg.host, store_cfg.port)
     ensure_collection(
         qdrant_client,
         store_cfg.collection_name,

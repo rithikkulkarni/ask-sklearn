@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, ReactNode, useState } from "react";
 import { extractErrorMessage, type ApiErrorBody, type QueryResponse } from "@/lib/types";
+import { ThemeToggle } from "./theme-toggle";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -29,7 +30,7 @@ export default function Home() {
 
       if (response.status === 429) {
         setErrorMessage(
-          "This demo is rate-limited to keep it free to run -- please wait a bit and try again.",
+          "This demo is rate-limited to keep it free to run. Wait a moment and try again.",
         );
         setStatus("error");
         return;
@@ -46,110 +47,145 @@ export default function Home() {
       setResult(data);
       setStatus("success");
     } catch {
-      setErrorMessage(
-        "Couldn't reach the server. Check your connection and try again.",
-      );
+      setErrorMessage("Couldn't reach the server. Check your connection and try again.");
       setStatus("error");
     }
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-12 sm:py-16">
-      <header className="flex flex-col gap-3 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Ask scikit-learn
-        </h1>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 sm:text-base">
-          A retrieval-augmented Q&amp;A demo grounded in real{" "}
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-6 py-14 sm:py-20">
+      <header className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            Ask scikit-learn
+          </h1>
+          <ThemeToggle />
+        </div>
+        <p className="max-w-[60ch] text-[15px] leading-relaxed text-ink/70">
+          Every answer here comes from{" "}
           <a
             href="https://github.com/scikit-learn/scikit-learn/issues"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:no-underline"
+            className="text-prompt-blue underline underline-offset-2 hover:no-underline"
           >
-            scikit-learn GitHub issues
-          </a>
-          . Ask a question about a scikit-learn bug, API design decision, or
-          feature request, and get a cited answer sourced from real issue
-          discussions -- or a clear &ldquo;I don&apos;t know&rdquo; when the
-          answer isn&apos;t in there.
+            scikit-learn&rsquo;s GitHub issue tracker
+          </a>{" "}
+          &mdash; the 12,000+ bug reports, feature requests, and API debates
+          where its maintainers do their actual work. Ask a real question and
+          get a cited answer pulled from that history, or a rejection if
+          the tracker doesn&apos;t have one.
         </p>
       </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <textarea
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="e.g. Why does SGDRegressor raise an error about buffer dimensions?"
-          rows={3}
-          maxLength={2000}
-          disabled={status === "loading"}
-          className="w-full resize-none rounded-lg border border-neutral-300 bg-white p-3 text-base outline-none focus:border-neutral-500 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900"
-        />
-        <button
-          type="submit"
-          disabled={!question.trim() || status === "loading"}
-          className="self-end rounded-lg bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900"
-        >
-          {status === "loading" ? "Thinking..." : "Ask"}
-        </button>
+        <Cell label="In [ ]:" labelColor="text-prompt-blue">
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Why does SGDRegressor raise an error about buffer dimensions?"
+            rows={3}
+            maxLength={2000}
+            disabled={status === "loading"}
+            className="w-full resize-none rounded-md border border-hairline bg-chip-bg p-3 font-mono text-sm leading-relaxed text-ink outline-none placeholder:text-ink/35 focus-visible:border-prompt-blue focus-visible:ring-2 focus-visible:ring-prompt-blue/20 disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={!question.trim() || status === "loading"}
+            // Some browser extensions (password managers, Grammarly, etc.)
+            // inject/strip attributes on form buttons before hydration,
+            // which trips React's hydration-mismatch warning even though
+            // `disabled` here is a pure function of `question`/`status` with
+            // no client-only branching. Confirmed via incognito (no
+            // extensions) showing no warning.
+            suppressHydrationWarning
+            className="mt-2 self-start rounded-md bg-prompt-blue px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-prompt-blue/90 focus-visible:ring-2 focus-visible:ring-prompt-blue/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 dark:text-paper cursor-pointer"
+          >
+            Run cell
+          </button>
+        </Cell>
       </form>
 
-      {status === "error" && errorMessage && (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
-        >
-          {errorMessage}
-        </div>
-      )}
-
-      {status === "success" && result && (
-        <ResultCard result={result} />
-      )}
+      <div aria-live="polite">
+        {status !== "idle" && (
+          <div className="animate-cell-resolve">
+            <Cell label="Out[ ]:" labelColor="text-output-rust">
+              <OutContent status={status} result={result} errorMessage={errorMessage} />
+            </Cell>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
 
-function ResultCard({ result }: { result: QueryResponse }) {
-  if (result.refused) {
+function Cell({
+  label,
+  labelColor,
+  children,
+}: {
+  label: string;
+  labelColor: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[3.5rem_1fr] items-start gap-x-3 sm:grid-cols-[4.5rem_1fr]">
+      <span className={`pt-2 font-mono text-xs sm:text-sm ${labelColor}`}>{label}</span>
+      <div className="min-w-0">{children}</div>
+    </div>
+  );
+}
+
+function OutContent({
+  status,
+  result,
+  errorMessage,
+}: {
+  status: Status;
+  result: QueryResponse | null;
+  errorMessage: string | null;
+}) {
+  if (status === "loading") {
     return (
-      <div className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">
-        <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
-          No confident answer found
-        </p>
-        <p className="text-sm text-amber-800 dark:text-amber-300">
-          {result.answer}
-        </p>
-      </div>
+      <p className="font-mono text-sm text-ink/45">
+        # retrieving related issues
+        <span className="animate-pulse">▍</span>
+      </p>
     );
   }
 
+  if (status === "error") {
+    return <p className="font-mono text-sm text-output-rust">{`# ${errorMessage}`}</p>;
+  }
+
+  if (!result) return null;
+
+  if (result.refused) {
+    return <p className="font-mono text-sm text-output-rust">{`# ${result.answer}`}</p>;
+  }
+
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
-      <p className="whitespace-pre-wrap text-sm leading-relaxed sm:text-base">
+    <div className="flex flex-col gap-3">
+      <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink">
         {result.answer}
       </p>
       {result.citations.length > 0 && (
-        <div className="flex flex-col gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-            Sources
-          </p>
-          <ul className="flex flex-wrap gap-2">
-            {result.citations.map((citation) => (
-              <li key={citation.issue_number}>
-                <a
-                  href={citation.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block rounded-full border border-neutral-300 px-3 py-1 text-xs font-medium hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
-                >
-                  #{citation.issue_number}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="font-mono text-xs text-ink/50">
+          {"# sourced from "}
+          {result.citations.map((citation, i) => (
+            <span key={citation.issue_number}>
+              <a
+                href={citation.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ink/70 underline underline-offset-2 hover:text-prompt-blue"
+              >
+                #{citation.issue_number}
+              </a>
+              {i < result.citations.length - 1 ? ", " : ""}
+            </span>
+          ))}
+        </p>
       )}
     </div>
   );

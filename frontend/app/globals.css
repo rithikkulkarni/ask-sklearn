@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
+/* Class-driven dark mode (toggled by ThemeToggle), not OS-preference-only --
+   Tailwind's default `dark:` variant only follows prefers-color-scheme, which
+   can't be overridden by a manual switch. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f7f8fa;
+  --ink: #16202b;
+  --prompt-blue: #2b4c7e;
+  --output-rust: #a5591f;
+  --hairline: #d8dce1;
+  --chip-bg: #edf1f6;
+}
+
+.dark {
+  /* Not a straight inversion -- a deep blue-charcoal page (not pure black),
+     a softened off-white ink, and both accents lightened/re-saturated so
+     they still read clearly against a dark ground. */
+  --paper: #12181f;
+  --ink: #dde3e9;
+  --prompt-blue: #6c9bd8;
+  --output-rust: #d98a4b;
+  --hairline: #2a333d;
+  --chip-bg: #1b232c;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-prompt-blue: var(--prompt-blue);
+  --color-output-rust: var(--output-rust);
+  --color-hairline: var(--hairline);
+  --color-chip-bg: var(--chip-bg);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes cell-resolve {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-cell-resolve {
+  animation: cell-resolve 180ms ease-out;
 }

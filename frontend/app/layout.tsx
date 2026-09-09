@@ -29,7 +29,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ask scikit-learn",
+  title: "ask scikit-learn",
   description:
     "A retrieval-augmented Q&A demo grounded in real scikit-learn GitHub issues.",
 };

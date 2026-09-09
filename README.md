@@ -6,7 +6,7 @@ Ask-sklearn is a retrieval-augmented Q&A system over scikit-learn's real GitHub 
 
 **[Try the live demo](https://frontend-vert-xi-32.vercel.app)**
 
-Interested in what else I've built? Check out my [GitHub](https://github.com/rithikkulkarni)!
+Interested in what else I've built? Check me out on [GitHub](https://github.com/rithikkulkarni), [LinkedIn](https://linkedin.com/in/rithikkulkarni), or at [My Website](https://rithikkulkarni.com)!
 
 
 ## What is ask sklearn?

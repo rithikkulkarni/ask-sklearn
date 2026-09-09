@@ -119,12 +119,8 @@ def main():
 
     config = load_config()
     openai_client = OpenAI(api_key=openai_key)
-    qdrant_client = get_client(
-        config.vector_store.host,
-        config.vector_store.port,
-        url=os.environ.get("QDRANT_URL"),
-        api_key=os.environ.get("QDRANT_API_KEY"),
-    )
+    # Always the local instance -- see the same note in embed_and_index.py.
+    qdrant_client = get_client(config.vector_store.host, config.vector_store.port)
 
     questions = load_questions(smoke_only=args.smoke)
     subset_label = "smoke" if args.smoke else "full"
